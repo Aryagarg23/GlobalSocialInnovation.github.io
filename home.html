@@ -335,6 +335,69 @@
     }
     
 },
+'GSI_class': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "stair-1",
+        prev: null
+    },
+    "stair-1": {
+        image: "./assets/GSI_classroom/stair1.jpg",
+        description: "And walk up the stairs all the way upto the 3rd floor",
+        next: "floor-1",
+        prev: "building-a"
+    }, 
+    "floor-1": {
+        image: "./assets/GSI_classroom/floor1.jpg",
+        description: "We are on floor 2.",
+        next: "stair-2",
+        prev: "stair-1"
+    }, 
+    "stair-2": {
+        image: "./assets/GSI_classroom/stair2.jpg",
+        description: "walk past the 2nd floor and continue up.",
+        next: "floor-2",
+        prev: "floor-1"
+    },
+    "floor-2": {
+        image: "./assets/GSI_classroom/floor2.jpg",
+        description: "We are on floor 3",
+        next: "hall-1",
+        prev: "stair-2"
+    },  
+    "hall-1": {
+        image: "./assets/GSI_classroom/floor3.jpg",
+        description: "Walk past the TEMBO (left) and W&S(right) office on floor 3",
+        next: "point-1",
+        prev: "floor-2"
+    },
+    "point-1": {
+        image: "./assets/GSI_classroom/point1.jpg",
+        description: "Walk towards where Arya is pointing, the green wall !",
+        next: "walk-1",
+        prev: "hall-1"
+    },
+    "walk-1": {
+        image: "./assets/GSI_classroom/walk1.jpg",
+        description: "Walk past the heapy office on the left, down that hallway",
+        next: "walk-2",
+        prev: "point-1"
+    },  
+    "walk-2": {
+        image: "./assets/GSI_classroom/walk2.jpg",
+        description: "Over here!",
+        next: "dest",
+        prev: "walk-1"
+    },  
+    "dest": {
+        image: "./assets/GSI_classroom/destination.jpg",
+        description: "Here you will find Aaron and Max occasionaly. They are very fun to talk to.",
+        next: null,
+        prev: "walk-2"
+    },  
+},
+
 
             // Add more locations here
         };
@@ -347,30 +410,35 @@
                 finalImage: './assets/default/front_desk.jpg'
             },
             'makerspace': {
-                title: 'Maker Space',
-                description: 'Navigate to the MakerSpace',
+                title: 'Maker-Space',
+                description: 'Here you can make/design and prototype your ideas and bring them to life',
                 finalImage: "./assets/makerspace/makerspace.jpg"
             },
             'esports': {
                 title: 'E-Sports Lab',
-                description: 'Navigate to the E-Sports Lab',
+                description: 'Wanna hoop? Play a game? Use powerful PC\'s to unleash your creativity? Make your way to the E-Sports lab',
                 finalImage: "./assets/esports/esports.jpg"
             }
             ,
             'bathrooms_0': {
                 title: 'Ground floor Bathrooms',
-                description: 'Navigate to the bathrom',
+                description: 'Where secrets are flushed',
                 finalImage: "./assets/bathroom0/bathroom.jpg"
             },
-            'elevators_0': {
-                title: 'Too tired to use stairs?',
-                description: 'Navigate to the elevators on the first floor!',
-                finalImage: "./assets/bathroom0/elevator_0.jpg"
-            },
-            'vending': {
-                title: 'Hungry for snacks?',
-                description: 'Navigate to the secret vending machines',
-                finalImage: "./assets/bathroom0/vending.jpg"
+'elevators_0': {
+    title: 'Ground Floor Elevators',
+    description: 'Where awkward silences travel vertically.',
+    finalImage: "./assets/bathroom0/elevator_0.jpg"
+},
+'vending': {
+    title: 'Vending Machines',
+    description: 'The ultimate gamble: chips or disappointment.',
+    finalImage: "./assets/bathroom0/vending.jpg"
+},
+            'GSI_class': {
+                title: 'Global Social Innovation?',
+                description: 'Wanna talk spend time learning about GSI? Navigate to Aaron\'s classroom',
+                finalImage: "./assets/GSI_classroom/destination.jpg"
             }
             // Add metadata for other locations
         };

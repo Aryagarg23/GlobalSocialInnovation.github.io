@@ -103,6 +103,20 @@
             font-size: 12px;
             z-index: 100;
         }
+        .home-content {
+    width: 100%;
+    height: 100%;
+    background: #f5f5f5;
+}
+
+.home-content h2 {
+    font-size: 24px;
+    color: #333;
+}
+
+.home-content a:hover {
+    background: #45a049;
+}
     </style>
 </head>
 <body>
@@ -378,58 +392,158 @@ const navigationGraphs = {
         prev: "bathroom-0"
     }
     
+},'GSI_class': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "stair-1",
+        prev: null
+    },
+    "stair-1": {
+        image: "./assets/GSI_classroom/stair1.jpg",
+        description: "And walk up the stairs all the way upto the 3rd floor",
+        next: "floor-1",
+        prev: "building-a"
+    }, 
+    "floor-1": {
+        image: "./assets/GSI_classroom/floor1.jpg",
+        description: "We are on floor 2.",
+        next: "stair-2",
+        prev: "stair-1"
+    }, 
+    "stair-2": {
+        image: "./assets/GSI_classroom/stair2.jpg",
+        description: "walk past the 2nd floor and continue up.",
+        next: "floor-2",
+        prev: "floor-1"
+    },
+    "floor-2": {
+        image: "./assets/GSI_classroom/floor2.jpg",
+        description: "We are on floor 3",
+        next: "hall-1",
+        prev: "stair-2"
+    },  
+    "hall-1": {
+        image: "./assets/GSI_classroom/floor3.jpg",
+        description: "Walk past the TEMBO (left) and W&S(right) office on floor 3",
+        next: "point-1",
+        prev: "floor-2"
+    },
+    "point-1": {
+        image: "./assets/GSI_classroom/point1.jpg",
+        description: "Walk towards where Arya is pointing, the green wall !",
+        next: "walk-1",
+        prev: "hall-1"
+    },
+    "walk-1": {
+        image: "./assets/GSI_classroom/walk1.jpg",
+        description: "Walk past the heapy office on the left, down that hallway",
+        next: "walk-2",
+        prev: "point-1"
+    },  
+    "walk-2": {
+        image: "./assets/GSI_classroom/walk2.jpg",
+        description: "Over here!",
+        next: "dest",
+        prev: "walk-1"
+    },  
+    "dest": {
+        image: "./assets/GSI_classroom/destination.jpg",
+        description: "Here you will find Aaron and Max occasionaly. They are very fun to talk to.",
+        next: null,
+        prev: "walk-2"
+    },  
 },
     
 };
 
         class NavigationGuide {
             constructor(container, graphs) {
-                this.container = container;
-                this.graphs = graphs;
-                this.currentLocation = getLocationFromUrl();
-                this.graph = graphs[this.currentLocation] || graphs['front_desk'];
-                this.currentNode = Object.keys(this.graph)[0];
-                this.imageContainer = container.querySelector('.image-container');
-                this.progressBar = container.querySelector('.progress');
-                this.currentIndex = 0;
-                this.totalNodes = Object.keys(this.graph).length;
-                
-                this.setupSwipeHandler();
-                this.setupButtonHandlers();
-                this.loadImages();
-                this.updateProgress();
-                this.updateDebugInfo();
-            }
+        this.container = container;
+        this.graphs = graphs;
+        this.currentLocation = getLocationFromUrl();
+        this.graph = graphs[this.currentLocation] || graphs['front_desk'];
+        this.currentNode = Object.keys(this.graph)[0];
+        this.imageContainer = container.querySelector('.image-container');
+        this.progressBar = container.querySelector('.progress');
+        this.currentIndex = 0;
+        // Add 1 to account for the home screen
+        this.totalNodes = Object.keys(this.graph).length + 1;
+        
+        this.setupSwipeHandler();
+        this.setupButtonHandlers();
+        this.loadImages();
+        this.updateProgress();
+        this.updateDebugInfo();
+    }
 
             updateDebugInfo() {
                 document.getElementById('currentLocation').textContent = this.currentLocation;
             }
 
             loadImages() {
-                this.imageContainer.innerHTML = '';
-                let currentNodeKey = this.currentNode;
-                
-                while (currentNodeKey) {
-                    const node = this.graph[currentNodeKey];
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'image-wrapper';
-                    
-                    const img = document.createElement('img');
-                    img.className = 'navigation-image';
-                    img.src = node.image;
-                    img.alt = node.description;
-                    
-                    const info = document.createElement('div');
-                    info.className = 'location-info';
-                    info.textContent = node.description;
-                    
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(info);
-                    this.imageContainer.appendChild(wrapper);
-                    
-                    currentNodeKey = node.next;
-                }
-            }
+    this.imageContainer.innerHTML = '';
+    let currentNodeKey = this.currentNode;
+    
+    while (currentNodeKey) {
+        const node = this.graph[currentNodeKey];
+        const wrapper = document.createElement('div');
+        wrapper.className = 'image-wrapper';
+        
+        const img = document.createElement('img');
+        img.className = 'navigation-image';
+        img.src = node.image;
+        img.alt = node.description;
+        
+        const info = document.createElement('div');
+        info.className = 'location-info';
+        info.textContent = node.description;
+        
+        wrapper.appendChild(img);
+        wrapper.appendChild(info);
+        this.imageContainer.appendChild(wrapper);
+        
+        currentNodeKey = node.next;
+        
+        // Add home button after the last image (when next is null)
+        if (!node.next) {
+            const homeWrapper = document.createElement('div');
+            homeWrapper.className = 'image-wrapper';
+            homeWrapper.style.backgroundColor = '#f5f5f5'; // Light gray background
+            
+            const homeContent = document.createElement('div');
+            homeContent.className = 'home-content';
+            homeContent.innerHTML = `
+                <div style="
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    padding: 20px;
+                ">
+                    <h2 style="margin-bottom: 20px; color: #333;">You've reached your destination!</h2>
+                    <a href="./home.html" style="
+                        display: inline-block;
+                        padding: 15px 30px;
+                        background: #4CAF50;
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        font-size: 1.2em;
+                        transition: background 0.3s ease;
+                    " onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
+                        Return to Home
+                    </a>
+                </div>
+            `;
+            
+            homeWrapper.appendChild(homeContent);
+            this.imageContainer.appendChild(homeWrapper);
+        }
+    }
+}
 
             setupSwipeHandler() {
                 const hammer = new Hammer(this.container);
@@ -450,23 +564,27 @@ const navigationGraphs = {
                 nextButton.addEventListener('click', () => this.next());
             }
 
-            next() {
-                const currentNode = this.graph[this.currentNode];
-                if (currentNode.next) {
-                    this.currentNode = currentNode.next;
-                    this.currentIndex++;
-                    this.updatePosition();
-                }
+    next() {
+        const currentNode = this.graph[this.currentNode];
+        if (currentNode.next || (this.currentIndex < this.totalNodes - 1)) {
+            if (currentNode.next) {
+                this.currentNode = currentNode.next;
             }
+            this.currentIndex++;
+            this.updatePosition();
+        }
+    }
 
-            prev() {
-                const currentNode = this.graph[this.currentNode];
-                if (currentNode.prev) {
-                    this.currentNode = currentNode.prev;
-                    this.currentIndex--;
-                    this.updatePosition();
-                }
+    prev() {
+        const currentNode = this.graph[this.currentNode];
+        if (currentNode.prev || this.currentIndex > 0) {
+            if (currentNode.prev) {
+                this.currentNode = currentNode.prev;
             }
+            this.currentIndex--;
+            this.updatePosition();
+        }
+    }
 
             updatePosition() {
                 this.imageContainer.style.transform = `translateX(-${this.currentIndex * 100}%)`;
@@ -474,9 +592,10 @@ const navigationGraphs = {
             }
 
             updateProgress() {
-                const progress = (this.currentIndex / (this.totalNodes - 1)) * 100;
-                this.progressBar.style.width = `${progress}%`;
-            }
+        // Adjust progress calculation to include home screen
+        const progress = (this.currentIndex / (this.totalNodes - 1)) * 100;
+        this.progressBar.style.width = `${progress}%`;
+    }
         }
 
         // Initialize the navigation guide
