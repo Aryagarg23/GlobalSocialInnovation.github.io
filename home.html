@@ -23,12 +23,52 @@
             color: #333;
         }
 
+        .floor-section {
+            margin-bottom: 30px;
+        }
+
+        .floor-header {
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .floor-header:hover {
+            background: #444;
+        }
+
+        .floor-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .floor-header .arrow {
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        .floor-header.active .arrow {
+            transform: rotate(180deg);
+        }
+
         .locations-grid {
-            display: grid;
+            display: none;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
             max-width: 1200px;
             margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .locations-grid.active {
+            display: grid;
         }
 
         .location-card {
@@ -82,10 +122,40 @@
         <p>Follow Arya to get familiar with this cool building</p>
     </div>
 
-    <div class="locations-grid" id="locationsGrid"></div>
+    <!-- Floor 1 Section -->
+    <div class="floor-section">
+        <div class="floor-header" onclick="toggleFloor('floor1')">
+            <h2>Floor 1 - Ground Floor</h2>
+            <span class="arrow">▼</span>
+        </div>
+        <div id="floor1" class="locations-grid">
+            <!-- Floor 1 locations will be populated here -->
+        </div>
+    </div>
+
+    <!-- Floor 2 Section -->
+    <div class="floor-section">
+        <div class="floor-header" onclick="toggleFloor('floor2')">
+            <h2>Floor 2</h2>
+            <span class="arrow">▼</span>
+        </div>
+        <div id="floor2" class="locations-grid">
+            <!-- Floor 2 locations will be populated here -->
+        </div>
+    </div>
+
+    <!-- Floor 3 Section -->
+    <div class="floor-section">
+        <div class="floor-header" onclick="toggleFloor('floor3')">
+            <h2>Floor 3</h2>
+            <span class="arrow">▼</span>
+        </div>
+        <div id="floor3" class="locations-grid">
+            <!-- Floor 3 locations will be populated here -->
+        </div>
+    </div>
 
     <script>
-        // Reuse your navigation graphs
         const navigationGraphs = {
             'front_desk': {
                 "building-a": {
@@ -401,8 +471,6 @@
 
             // Add more locations here
         };
-
-        // Location metadata
         const locationMetadata = {
             'front_desk': {
                 title: 'Front Desk',
@@ -443,39 +511,71 @@
             // Add metadata for other locations
         };
 
-// Update just the card creation part of your script
-function createLocationCards() {
-    const grid = document.getElementById('locationsGrid');
-    
-    Object.keys(navigationGraphs).forEach(locationKey => {
-        const metadata = locationMetadata[locationKey];
-        const graph = navigationGraphs[locationKey];
-        const stepsCount = Object.keys(graph).length;
-        
-        const card = document.createElement('a');
-        card.className = 'location-card';
-        // Change the href to point to navigation.html with a location parameter
-        card.href = `navigation.html?location=${locationKey}`;
-        
-        // Get the final destination image (last node in the graph)
-        const nodes = Object.values(graph);
-        const finalNode = nodes[nodes.length - 1];
-        
-        card.innerHTML = `
-            <img class="card-image" src="${metadata.finalImage}" alt="${metadata.title}">
-            <div class="card-content">
-                <h2 class="card-title">${metadata.title}</h2>
-                <p class="card-description">${metadata.description}</p>
-                <p class="steps-count">${stepsCount} steps</p>
-            </div>
-        `;
-        
-        grid.appendChild(card);
-    });
-}
+        // Floor assignments for locations
+        const locationFloors = {
+            'front_desk': 'floor1',
+            'makerspace': 'floor1',
+            'esports': 'floor1',
+            'bathrooms_0': 'floor1',
+            'elevators_0': 'floor1',
+            'vending': 'floor1',
+            'GSI_class': 'floor3'
+        };
 
-        // Initialize the cards when the page loads
-        createLocationCards();
+        function toggleFloor(floorId) {
+            const grid = document.getElementById(floorId);
+            const header = grid.previousElementSibling;
+            
+            // Close all other floors
+            document.querySelectorAll('.locations-grid').forEach(g => {
+                if (g.id !== floorId) {
+                    g.classList.remove('active');
+                    g.previousElementSibling.classList.remove('active');
+                }
+            });
+            
+            grid.classList.toggle('active');
+            header.classList.toggle('active');
+        }
+
+        function createLocationCards() {
+            // Create a map to store floor-specific grids
+            const floorGrids = {
+                floor1: document.getElementById('floor1'),
+                floor2: document.getElementById('floor2'),
+                floor3: document.getElementById('floor3')
+            };
+            
+            Object.keys(navigationGraphs).forEach(locationKey => {
+                const metadata = locationMetadata[locationKey];
+                const graph = navigationGraphs[locationKey];
+                const stepsCount = Object.keys(graph).length;
+                const floorId = locationFloors[locationKey];
+                
+                if (!floorId || !floorGrids[floorId]) return; // Skip if no floor is assigned
+                
+                const card = document.createElement('a');
+                card.className = 'location-card';
+                card.href = `navigation.html?location=${locationKey}`;
+                
+                card.innerHTML = `
+                    <img class="card-image" src="${metadata.finalImage}" alt="${metadata.title}">
+                    <div class="card-content">
+                        <h2 class="card-title">${metadata.title}</h2>
+                        <p class="card-description">${metadata.description}</p>
+                        <p class="steps-count">${stepsCount} steps</p>
+                    </div>
+                `;
+                
+                floorGrids[floorId].appendChild(card);
+            });
+        }
+
+        // Initialize when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createLocationCards();
+            toggleFloor('floor1'); // Open first floor by default
+        });
     </script>
 </body>
 </html>
