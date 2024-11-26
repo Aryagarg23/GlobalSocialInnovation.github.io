@@ -1,1 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Navigation Guide</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <base href="/GlobalSocialInnovation.github.io/">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .image-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.3s ease-out;
+        }
+
+        .image-wrapper {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .navigation-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .location-info {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .progress {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        .direction-hint {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .prev-hint {
+            left: 10px;
+        }
+
+        .next-hint {
+            right: 10px;
+        }
+
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">Current Location: <span id="currentLocation">Loading...</span></div>
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress" style="width: 0%"></div>
+        </div>
+        <div class="image-container">
+            <!-- Images will be loaded here dynamically -->
+        </div>
+        <button class="direction-hint prev-hint">←</button>
+        <button class="direction-hint next-hint">→</button>
+    </div>
+
+    <script>
+        // Get the location from the URL
+        const getLocationFromUrl = () => {
+            const path = window.location.pathname;
+            const parts = path.split('/');
+            // Return the last non-empty part of the path, or 'default' if none found
+            for (let i = parts.length - 1; i >= 0; i--) {
+                if (parts[i] && parts[i] !== 'GlobalSocialInnovation.github.io') {
+                    return parts[i];
+                }
+            }
+            return 'default';
+        };
+
+        // Navigation graph structure with relative paths to assets
+        const navigationGraphs = {
+            'default': {
+                "building-a": {
+                    image: "assets/default/start.jpg",
+                    description: "Start at Building A entrance",
+                    next: "corridor-1",
+                    prev: null
+                },
+                "corridor-1": {
+                    image: "assets/default/corridor.jpg",
+                    description: "Walk through the main corridor",
+                    next: "stairs-1",
+                    prev: "building-a"
+                },
+                "stairs-1": {
+                    image: "assets/default/stairs.jpg",
+                    description: "Go up to the second floor",
+                    next: "destination",
+                    prev: "corridor-1"
+                },
+                "destination": {
+                    image: "assets/default/end.jpg",
+                    description: "You have arrived at your destination",
+                    next: null,
+                    prev: "stairs-1"
+                }
+            }
+            // Add more location-specific graphs here
+        };
+
+        class NavigationGuide {
+            constructor(container, graphs) {
+                this.container = container;
+                this.graphs = graphs;
+                this.currentLocation = getLocationFromUrl();
+                this.graph = graphs[this.currentLocation] || graphs['default'];
+                this.currentNode = Object.keys(this.graph)[0];
+                this.imageContainer = container.querySelector('.image-container');
+                this.progressBar = container.querySelector('.progress');
+                this.currentIndex = 0;
+                this.totalNodes = Object.keys(this.graph).length;
+                
+                this.setupSwipeHandler();
+                this.setupButtonHandlers();
+                this.loadImages();
+                this.updateProgress();
+                this.updateDebugInfo();
+            }
+
+            updateDebugInfo() {
+                document.getElementById('currentLocation').textContent = this.currentLocation;
+            }
+
+            loadImages() {
+                this.imageContainer.innerHTML = '';
+                let currentNodeKey = this.currentNode;
+                
+                while (currentNodeKey) {
+                    const node = this.graph[currentNodeKey];
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'image-wrapper';
+                    
+                    const img = document.createElement('img');
+                    img.className = 'navigation-image';
+                    img.src = node.image;
+                    img.alt = node.description;
+                    
+                    const info = document.createElement('div');
+                    info.className = 'location-info';
+                    info.textContent = node.description;
+                    
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(info);
+                    this.imageContainer.appendChild(wrapper);
+                    
+                    currentNodeKey = node.next;
+                }
+            }
+
+            setupSwipeHandler() {
+                const hammer = new Hammer(this.container);
+                hammer.on('swipe', (e) => {
+                    if (e.direction === Hammer.DIRECTION_LEFT) {
+                        this.next();
+                    } else if (e.direction === Hammer.DIRECTION_RIGHT) {
+                        this.prev();
+                    }
+                });
+            }
+
+            setupButtonHandlers() {
+                const prevButton = this.container.querySelector('.prev-hint');
+                const nextButton = this.container.querySelector('.next-hint');
+
+                prevButton.addEventListener('click', () => this.prev());
+                nextButton.addEventListener('click', () => this.next());
+            }
+
+            next() {
+                const currentNode = this.graph[this.currentNode];
+                if (currentNode.next) {
+                    this.currentNode = currentNode.next;
+                    this.currentIndex++;
+                    this.updatePosition();
+                }
+            }
+
+            prev() {
+                const currentNode = this.graph[this.currentNode];
+                if (currentNode.prev) {
+                    this.currentNode = currentNode.prev;
+                    this.currentIndex--;
+                    this.updatePosition();
+                }
+            }
+
+            updatePosition() {
+                this.imageContainer.style.transform = `translateX(-${this.currentIndex * 100}%)`;
+                this.updateProgress();
+            }
+
+            updateProgress() {
+                const progress = (this.currentIndex / (this.totalNodes - 1)) * 100;
+                this.progressBar.style.width = `${progress}%`;
+            }
+        }
+
+        // Initialize the navigation guide
+        const container = document.querySelector('.container');
+        const guide = new NavigationGuide(container, navigationGraphs);
+    </script>
+</body>
 </html>
