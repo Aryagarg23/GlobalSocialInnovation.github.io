@@ -265,6 +265,62 @@ const navigationGraphs = {
         prev: "point1"
     }
     
+},'elevators_0': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "double-point",
+        prev: "stairs-1"
+    },
+    "double-point": {
+        image: "./assets/bathroom0/double_point.jpg",
+        description: "Walk past the Esports lab and the Makerspace",
+        next: "walk1",
+        prev: "corridor-1"
+    },
+    "walk1": {
+        image: "./assets/bathroom0/walk1.jpg",
+        description: "Down the hall and take a left",
+        next: "point1",
+        prev: "double-point"
+    },
+    "point1": {
+        image: "./assets/bathroom0/point1.jpg",
+        description: "Down the hall and take a left",
+        next: "walk2",
+        prev: "walk1"
+    },
+    "walk2": {
+        image: "./assets/bathroom0/walk2.jpg",
+        description: "Down this hallway",
+        next: "elevator-0",
+        prev: "point1"
+    },
+    "elevator-0": {
+        image: "./assets/bathroom0/elevator_0.jpg",
+        description: "Here it is!",
+        next: null,
+        prev: "point1"
+    }
+    
 },
 'vending': {
     "building-a": {
