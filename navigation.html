@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Navigation Guide</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<!-- Remove or comment out this line when testing locally -->
+<!-- <base href="/GlobalSocialInnovation.github.io/"> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .image-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.3s ease-out;
+        }
+
+        .image-wrapper {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .navigation-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .location-info {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .progress {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        .direction-hint {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .prev-hint {
+            left: 10px;
+        }
+
+        .next-hint {
+            right: 10px;
+        }
+
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">Current Location: <span id="currentLocation">Loading...</span></div>
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress" style="width: 0%"></div>
+        </div>
+        <div class="image-container">
+            <!-- Images will be loaded here dynamically -->
+        </div>
+        <button class="direction-hint prev-hint">←</button>
+        <button class="direction-hint next-hint">→</button>
+    </div>
+
+    <script>
+        // Get the location from the URL
+        const getLocationFromUrl = () => {
+    // Get location from query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const location = urlParams.get('location');
+    
+    // Return the location or default to 'front_desk'
+    return location || 'front_desk';
+};
+
+// Navigation graph structure with relative paths to assets
+const navigationGraphs = {
+    'front_desk': {
+        "building-a": {
+            image: "./assets/default/start.jpg",    // Added ./ for relative path
+            description: "Start at the 1819 entrance",
+            next: "corridor-0",
+            prev: null
+        },
+        "corridor-0": {
+            image: "./assets/default/corridor_0.jpg",    // Added ./ for relative path
+            description: "Walk through the main corridor past the staircase",
+            next: "stairs-1",
+            prev: "building-a"
+        },
+        "stairs-1": {
+            image: "./assets/default/front_desk.jpg",    // Added ./ for relative path
+            description: "You have arrived at the front desk!!",
+            next: null,
+            prev: "corridor-0"
+        }
+    },
+'makerspace': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "makerspace",
+        prev: "stairs-1"
+    },
+    "makerspace": {
+        image: "./assets/makerspace/makerspace.jpg",
+        description: "The makerspace is to your right!!",
+        next: null,
+        prev: "corridor-1"
+    }
+},
+'esports': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "esports",
+        prev: "stairs-1"
+    },
+    "esports": {
+        image: "./assets/esports/esports.jpg",
+        description: "The esports-lab is to your left!!",
+        next: null,
+        prev: "corridor-1"
+    }
+},
+'bathrooms_0': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "double-point",
+        prev: "stairs-1"
+    },
+    "double-point": {
+        image: "./assets/bathroom0/double_point.jpg",
+        description: "Walk past the Esports lab and the Makerspace",
+        next: "walk1",
+        prev: "corridor-1"
+    },
+    "walk1": {
+        image: "./assets/bathroom0/walk1.jpg",
+        description: "Down the hall and take a left",
+        next: "point1",
+        prev: "double-point"
+    },
+    "point1": {
+        image: "./assets/bathroom0/point1.jpg",
+        description: "Down the hall and take a left",
+        next: "bathroom-0",
+        prev: "walk1"
+    },
+    "bathroom-0": {
+        image: "./assets/bathroom0/bathroom.jpg",
+        description: "Here it is!",
+        next: null,
+        prev: "point1"
+    }
+    
+},
+'vending': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "double-point",
+        prev: "stairs-1"
+    },
+    "double-point": {
+        image: "./assets/bathroom0/double_point.jpg",
+        description: "Walk past the Esports lab and the Makerspace",
+        next: "walk1",
+        prev: "corridor-1"
+    },
+    "walk1": {
+        image: "./assets/bathroom0/walk1.jpg",
+        description: "Down the hall and take a left",
+        next: "point1",
+        prev: "double-point"
+    },
+    "point1": {
+        image: "./assets/bathroom0/point1.jpg",
+        description: "Down the hall and take a left",
+        next: "bathroom-0",
+        prev: "walk1"
+    },
+    "bathroom-0": {
+        image: "./assets/bathroom0/bathroom.jpg",
+        description: "Walk past the bathrooms down the hall",
+        next: "vending",
+        prev: "point1"
+    },
+    "vending": {
+        image: "./assets/bathroom0/vending.jpg",
+        description: "Get your snacks on!",
+        next: null,
+        prev: "bathroom-0"
+    }
+    
+},
+    
+};
+
+        class NavigationGuide {
+            constructor(container, graphs) {
+                this.container = container;
+                this.graphs = graphs;
+                this.currentLocation = getLocationFromUrl();
+                this.graph = graphs[this.currentLocation] || graphs['front_desk'];
+                this.currentNode = Object.keys(this.graph)[0];
+                this.imageContainer = container.querySelector('.image-container');
+                this.progressBar = container.querySelector('.progress');
+                this.currentIndex = 0;
+                this.totalNodes = Object.keys(this.graph).length;
+                
+                this.setupSwipeHandler();
+                this.setupButtonHandlers();
+                this.loadImages();
+                this.updateProgress();
+                this.updateDebugInfo();
+            }
+
+            updateDebugInfo() {
+                document.getElementById('currentLocation').textContent = this.currentLocation;
+            }
+
+            loadImages() {
+                this.imageContainer.innerHTML = '';
+                let currentNodeKey = this.currentNode;
+                
+                while (currentNodeKey) {
+                    const node = this.graph[currentNodeKey];
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'image-wrapper';
+                    
+                    const img = document.createElement('img');
+                    img.className = 'navigation-image';
+                    img.src = node.image;
+                    img.alt = node.description;
+                    
+                    const info = document.createElement('div');
+                    info.className = 'location-info';
+                    info.textContent = node.description;
+                    
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(info);
+                    this.imageContainer.appendChild(wrapper);
+                    
+                    currentNodeKey = node.next;
+                }
+            }
+
+            setupSwipeHandler() {
+                const hammer = new Hammer(this.container);
+                hammer.on('swipe', (e) => {
+                    if (e.direction === Hammer.DIRECTION_LEFT) {
+                        this.next();
+                    } else if (e.direction === Hammer.DIRECTION_RIGHT) {
+                        this.prev();
+                    }
+                });
+            }
+
+            setupButtonHandlers() {
+                const prevButton = this.container.querySelector('.prev-hint');
+                const nextButton = this.container.querySelector('.next-hint');
+
+                prevButton.addEventListener('click', () => this.prev());
+                nextButton.addEventListener('click', () => this.next());
+            }
+
+            next() {
+                const currentNode = this.graph[this.currentNode];
+                if (currentNode.next) {
+                    this.currentNode = currentNode.next;
+                    this.currentIndex++;
+                    this.updatePosition();
+                }
+            }
+
+            prev() {
+                const currentNode = this.graph[this.currentNode];
+                if (currentNode.prev) {
+                    this.currentNode = currentNode.prev;
+                    this.currentIndex--;
+                    this.updatePosition();
+                }
+            }
+
+            updatePosition() {
+                this.imageContainer.style.transform = `translateX(-${this.currentIndex * 100}%)`;
+                this.updateProgress();
+            }
+
+            updateProgress() {
+                const progress = (this.currentIndex / (this.totalNodes - 1)) * 100;
+                this.progressBar.style.width = `${progress}%`;
+            }
+        }
+
+        // Initialize the navigation guide
+        const container = document.querySelector('.container');
+        const guide = new NavigationGuide(container, navigationGraphs);
+    </script>
+</body>
+</html>

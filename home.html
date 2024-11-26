@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Guide - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .location-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .card-description {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .steps-count {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>1819 Navigation Guide</h1>
+        <p>Select a destination to start navigation</p>
+    </div>
+
+    <div class="locations-grid" id="locationsGrid"></div>
+
+    <script>
+        // Reuse your navigation graphs
+        const navigationGraphs = {
+            'front_desk': {
+                "building-a": {
+                    image: "./assets/default/start.jpg",
+                    description: "Start at the 1819 entrance",
+                    next: "corridor-0",
+                    prev: null
+                },
+                "corridor-0": {
+                    image: "./assets/default/corridor_0.jpg",
+                    description: "Walk through the main corridor past the staircase",
+                    next: "stairs-1",
+                    prev: "building-a"
+                },
+                "stairs-1": {
+                    image: "./assets/default/front_desk.jpg",
+                    description: "You have arrived at the front desk!!",
+                    next: null,
+                    prev: "corridor-0"
+                }
+            },
+'makerspace': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "makerspace",  // Changed from stairs-1 to makerspace
+        prev: "stairs-1"
+    },
+    "makerspace": {
+        image: "./assets/makerspace/makerspace.jpg",
+        description: "The makerspace is to your right!!",
+        next: null,
+        prev: "corridor-1"
+    }
+},
+'esports': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "esports",
+        prev: "stairs-1"
+    },
+    "esports": {
+        image: "./assets/esports/esports.jpg",
+        description: "The esports-lab is to your left!!",
+        next: null,
+        prev: "corridor-1"
+    }
+},'bathrooms_0': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "double-point",
+        prev: "stairs-1"
+    },
+    "double-point": {
+        image: "./assets/bathroom0/double_point.jpg",
+        description: "Walk past the Esports lab and the Makerspace",
+        next: "walk1",
+        prev: "corridor-1"
+    },
+    "walk1": {
+        image: "./assets/bathroom0/walk1.jpg",
+        description: "Down the hall and take a left",
+        next: "point1",
+        prev: "double-point"
+    },
+    "point1": {
+        image: "./assets/bathroom0/point1.jpg",
+        description: "Down the hall and take a left",
+        next: "bathroom-0",
+        prev: "walk1"
+    },
+    "bathroom-0": {
+        image: "./assets/bathroom0/bathroom.jpg",
+        description: "Here it is!",
+        next: null,
+        prev: "point1"
+    }
+    
+},'vending': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "corridor-0",
+        prev: null
+    },
+    "corridor-0": {
+        image: "./assets/default/corridor_0.jpg",
+        description: "Walk through the main corridor past the staircase",
+        next: "stairs-1",
+        prev: "building-a"
+    },
+    "stairs-1": {
+        image: "./assets/makerspace/left_turn.jpg",
+        description: "Go to where the guide is and turn left!",
+        next: "corridor-1",
+        prev: "corridor-0"
+    },
+    "corridor-1": {
+        image: "./assets/makerspace/corridor_1.jpg",
+        description: "Follow the guide through the corridor",
+        next: "double-point",
+        prev: "stairs-1"
+    },
+    "double-point": {
+        image: "./assets/bathroom0/double_point.jpg",
+        description: "Walk past the Esports lab and the Makerspace",
+        next: "walk1",
+        prev: "corridor-1"
+    },
+    "walk1": {
+        image: "./assets/bathroom0/walk1.jpg",
+        description: "Down the hall and take a left",
+        next: "point1",
+        prev: "double-point"
+    },
+    "point1": {
+        image: "./assets/bathroom0/point1.jpg",
+        description: "Down the hall and take a left",
+        next: "bathroom-0",
+        prev: "walk1"
+    },
+    "bathroom-0": {
+        image: "./assets/bathroom0/bathroom.jpg",
+        description: "Walk past the bathrooms down the hall",
+        next: "vending",
+        prev: "point1"
+    },
+    "vending": {
+        image: "./assets/bathroom0/vending.jpg",
+        description: "Get your snacks on!",
+        next: null,
+        prev: "bathroom-0"
+    }
+    
+},
+
+            // Add more locations here
+        };
+
+        // Location metadata
+        const locationMetadata = {
+            'front_desk': {
+                title: 'Front Desk',
+                description: 'Navigate to the 1819 Innovation Hub front desk',
+                finalImage: './assets/default/front_desk.jpg'
+            },
+            'makerspace': {
+                title: 'Maker Space',
+                description: 'Navigate to the MakerSpace',
+                finalImage: "./assets/makerspace/makerspace.jpg"
+            },
+            'esports': {
+                title: 'E-Sports Lab',
+                description: 'Navigate to the E-Sports Lab',
+                finalImage: "./assets/esports/esports.jpg"
+            }
+            ,
+            'bathrooms_0': {
+                title: 'Ground floor Bathrooms',
+                description: 'Navigate to the bathrom',
+                finalImage: "./assets/bathroom0/bathroom.jpg"
+            },
+            'vending': {
+                title: 'Hungry for snacks?',
+                description: 'Navigate to the secret vending machines',
+                finalImage: "./assets/bathroom0/vending.jpg"
+            }
+            // Add metadata for other locations
+        };
+
+// Update just the card creation part of your script
+function createLocationCards() {
+    const grid = document.getElementById('locationsGrid');
+    
+    Object.keys(navigationGraphs).forEach(locationKey => {
+        const metadata = locationMetadata[locationKey];
+        const graph = navigationGraphs[locationKey];
+        const stepsCount = Object.keys(graph).length;
+        
+        const card = document.createElement('a');
+        card.className = 'location-card';
+        // Change the href to point to navigation.html with a location parameter
+        card.href = `navigation.html?location=${locationKey}`;
+        
+        // Get the final destination image (last node in the graph)
+        const nodes = Object.values(graph);
+        const finalNode = nodes[nodes.length - 1];
+        
+        card.innerHTML = `
+            <img class="card-image" src="${metadata.finalImage}" alt="${metadata.title}">
+            <div class="card-content">
+                <h2 class="card-title">${metadata.title}</h2>
+                <p class="card-description">${metadata.description}</p>
+                <p class="steps-count">${stepsCount} steps</p>
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
+}
+
+        // Initialize the cards when the page loads
+        createLocationCards();
+    </script>
+</body>
+</html>
