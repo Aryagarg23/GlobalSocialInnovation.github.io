@@ -155,6 +155,17 @@
         </div>
     </div>
 
+    <!-- Floor 4 Section -->
+    <div class="floor-section">
+        <div class="floor-header" onclick="toggleFloor('floor4')">
+            <h2>Floor 4</h2>
+            <span class="arrow">▼</span>
+        </div>
+        <div id="floor4" class="locations-grid">
+            <!-- Floor 4 locations will be populated here -->
+        </div>
+    </div>
+
     <script>
         const navigationGraphs = {
             'front_desk': {
@@ -467,6 +478,74 @@
         prev: "walk-2"
     },  
 },
+'tower_room': {
+    "building-a": {
+        image: "./assets/default/start.jpg",
+        description: "Start at the 1819 entrance",
+        next: "stair-1",
+        prev: null
+    },
+    "stair-1": {
+        image: "./assets/GSI_classroom/stair1.jpg",
+        description: "And walk up the stairs all the way upto the 4th floor",
+        next: "floor-1",
+        prev: "building-a"
+    }, 
+    "floor-1": {
+        image: "./assets/GSI_classroom/floor1.jpg",
+        description: "We are on floor 2.",
+        next: "stair-2",
+        prev: "stair-1"
+    }, 
+    "stair-2": {
+        image: "./assets/GSI_classroom/stair2.jpg",
+        description: "walk past the 2nd floor and continue up.",
+        next: "floor-2",
+        prev: "floor-1"
+    },
+    "floor-2": {
+        image: "./assets/GSI_classroom/floor2.jpg",
+        description: "We are on floor 3",
+        next: "floor-3",
+        prev: "stair-2"
+    },  
+    "floor-3": {
+        image: "./assets/tower_room/to_4th_floor.jpg",
+        description: "Continue waling upto floor 4",
+        next: "point-1",
+        prev: "floor-2"
+    },
+    "point-1": {
+        image: "./assets/tower_room/walk1.jpg",
+        description: "Follow Arya through floor 4 to the tower room",
+        next: "walk-1",
+        prev: "floor-3"
+    },
+    "walk-1": {
+        image: "./assets/tower_room/walk2.jpg",
+        description: "Keep following Arya, around the pillar",
+        next: "walk-2",
+        prev: "point-1"
+    },  
+    "walk-2": {
+        image: "./assets/tower_room/walk3.jpg",
+        description: "Over here! Take a Left from this pillar",
+        next: "dest",
+        prev: "walk-1"
+    },  
+    "dest": {
+        image: "./assets/tower_room/walk4.jpg",
+        description: "Here is the tower room",
+        next: "dest-2",
+        prev: "walk-2"
+    },  
+    "dest-2": {
+        image: "./assets/tower_room/walk5.jpg",
+        description: "The entrance is a little hidden around this pillar, Here!",
+        next: null,
+        prev: "dest"
+    },  
+},
 
 
             // Add more locations here
@@ -507,6 +586,11 @@
                 title: 'Global Social Innovation?',
                 description: 'Wanna talk spend time learning about GSI? Navigate to Aaron\'s classroom',
                 finalImage: "./assets/GSI_classroom/destination.jpg"
+            },
+            'tower_room':{
+                title:"Tower Room",
+                description:"Here there was a giant water tank which was meant to extinguish fires.",
+                finalImage:"assets/tower_room/walk5.jpg"
             }
             // Add metadata for other locations
         };
@@ -519,7 +603,8 @@
             'bathrooms_0': 'floor1',
             'elevators_0': 'floor1',
             'vending': 'floor1',
-            'GSI_class': 'floor3'
+            'GSI_class': 'floor3',
+            'tower_room':'floor4'
         };
 
         function toggleFloor(floorId) {
@@ -543,7 +628,8 @@
             const floorGrids = {
                 floor1: document.getElementById('floor1'),
                 floor2: document.getElementById('floor2'),
-                floor3: document.getElementById('floor3')
+                floor3: document.getElementById('floor3'),
+                floor4: document.getElementById('floor4') 
             };
             
             Object.keys(navigationGraphs).forEach(locationKey => {
